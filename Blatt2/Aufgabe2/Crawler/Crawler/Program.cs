@@ -17,7 +17,7 @@ namespace Crawler
         static void Main(string[] args)
         {
             File.Delete("../../../CrawlerResult.txt");
-            var queue = new ConcurrentQueue<Link>(args.Select(s => new Link{Target = s}));
+            var queue = new ConcurrentQueue<Link>(args.Select(s => new Link { Target = s }));
             var visited = new HashSet<string>();
 
             for (int i = 0; i < 1000; i++)
@@ -35,10 +35,10 @@ namespace Crawler
                 if (!queue.TryDequeue(out Link curLink))
                     continue;
 
-                Console.WriteLine($"Visitng: {curLink} (in queue: {queue.Count})");
+                Console.WriteLine($"Visitng: {curLink.Target} (in queue: {queue.Count})");
                 if (visited.Contains(curLink.Target))
                     continue;
-                
+
                 File.AppendAllText("../../../CrawlerResult.txt", $"{curLink}\n");
 
                 visited.Add(curLink.Target);
@@ -76,7 +76,7 @@ namespace Crawler
             return document.DocumentNode.Descendants("a")
                 .Select(x => x?.Attributes["href"]?.Value)
                 .Where(x => !string.IsNullOrWhiteSpace(x))
-                .Select(x => CleanLink(new Link {Source = link.Target, Target = x}))
+                .Select(x => CleanLink(new Link { Source = link.Target, Target = x }))
                 .Where(x => x != null);
         }
 
@@ -84,9 +84,8 @@ namespace Crawler
         {
             if (Uri.TryCreate(new Uri(link.Source), link.Target, out Uri newTargetUri))
             {
-                newTargetUri = new UriBuilder(newTargetUri) {Query = ""}.Uri;
-                Console.WriteLine($"\tNormalized Url for link '{link}': {newTargetUri.AbsoluteUri}");
-                return new Link {Source = link.Source, Target = newTargetUri.AbsoluteUri};
+                newTargetUri = new UriBuilder(newTargetUri) { Query = "" }.Uri;
+                return new Link { Source = link.Source, Target = newTargetUri.AbsoluteUri };
             }
             else
             {
