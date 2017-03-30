@@ -1,0 +1,10 @@
+Meta informationen beibehalten aber Tags elimieren.
+Tags die keine Information enthalten komplett elimieren (z.B. Path, Lines, Message-ID)
+Rest wie EMailBody behandeln.
+
+Beim mail body die Stopworte elimieren, stemming, bag of words erstellen ( tf ermitteln ), inverse berechnen ( idf = log(N/n_i) ) daraus gewichtung berechnen ( tw = idf * tf )
+
+
+tf = term freqeuncy
+idf = inverse document freqeuncy
+tw = term weight
