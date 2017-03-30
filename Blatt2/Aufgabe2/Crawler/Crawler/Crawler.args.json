@@ -1,0 +1,24 @@
+{
+  "DataCollection": [
+    {
+      "Id": "2c64fc2d-688c-418d-b468-ea512ecc0940",
+      "Command": "https://www.wikipedia.org/"
+    },
+    {
+      "Id": "a73303c7-82c7-4ca3-abd7-1aed4e2e40f2",
+      "Command": "http://stackexchange.com/"
+    },
+    {
+      "Id": "993c857c-ffdb-44bd-9a78-afa4613b18b3",
+      "Command": "http://dmoztools.net/"
+    },
+    {
+      "Id": "b63e76ac-cc0d-4b7a-8a66-360d22d276da",
+      "Command": "https://www.reddit.com/"
+    },
+    {
+      "Id": "d209bfca-8aa4-403d-99d0-5ca9c43c602d",
+      "Command": "https://twitter.com/"
+    }
+  ]
+}
