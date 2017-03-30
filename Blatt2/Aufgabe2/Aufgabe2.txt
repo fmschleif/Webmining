@@ -4,3 +4,8 @@ Seed Websites:
 	http://dmoztools.net/
 	https://www.reddit.com/
 	https://twitter.com/
+	
+Probleme:
+	Relative Links (häufig ohne protokoll oder domain)
+	Nicht jeder server ist erreichbar
+	
