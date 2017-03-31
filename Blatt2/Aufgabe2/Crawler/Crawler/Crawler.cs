@@ -44,7 +44,7 @@ namespace Crawler
 
             for (int i = 0; i < _crawlLimit; i++)
             {
-                Console.Write($"\rProgress: {i:D5}/{_crawlLimit} ({i/ _crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]");
+                Console.Write($"\rProgress: {i}/{_crawlLimit} ({(double)i/_crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]");
                 while (_linksToFollow.IsEmpty && _workingTasks.Count > 0)
                 {
                     Task.WhenAny(_workingTasks.Values).Wait();
@@ -62,7 +62,11 @@ namespace Crawler
 
                 _workingTasks.TryAdd(curLink, CrawlTargetSite(curLink).ContinueWith(task => _workingTasks.TryRemove(curLink, out Task _)));
             }
-            Task.WhenAll(_workingTasks.Values).Wait(10000);
+            while (!_workingTasks.IsEmpty)
+            {
+                Task.WhenAll(_workingTasks.Values).Wait(200);
+                Console.Write($"\rProgress: {_crawlLimit}/{_crawlLimit} ({(double)_crawlLimit / _crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]");
+            }
         }
 
         private async Task CrawlTargetSite(Link link)
