@@ -23,7 +23,9 @@ namespace Crawler
 
         private int _crawlLimit;
 
-        public Crawler(IEnumerable<string> seedUrls)
+        public event EventHandler<SiteVisitedEventArgs> SiteVisited;
+
+        public Crawler(IEnumerable<string> seedUrls, int crawlLimit = 5000)
         {
             _linksToFollow = new ConcurrentQueue<Link>(seedUrls.Select(s => new Link { Target = s }));
             _visited = new HashSet<string>();
@@ -35,16 +37,16 @@ namespace Crawler
                 AllowAutoRedirect = true,
             });
 
-            _crawlLimit = 5000;
+            _crawlLimit = crawlLimit;
         }
 
         public void StartCrawling()
         {
             File.Delete("CrawlerResult.txt");
 
-            for (int i = 0; i < _crawlLimit; i++)
+            while (_visited.Count < _crawlLimit)
             {
-                Console.Write($"\rProgress: {i}/{_crawlLimit} ({(double)i/_crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]");
+                Console.Write($"\rProgress: {_visited.Count}/{_crawlLimit} ({100.0*_visited.Count/_crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]        ");
                 while (_linksToFollow.IsEmpty && _workingTasks.Count > 0)
                 {
                     Task.WhenAny(_workingTasks.Values).Wait();
@@ -65,7 +67,7 @@ namespace Crawler
             while (!_workingTasks.IsEmpty)
             {
                 Task.WhenAll(_workingTasks.Values).Wait(200);
-                Console.Write($"\rProgress: {_crawlLimit}/{_crawlLimit} ({(double)_crawlLimit / _crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]");
+                Console.Write($"\rProgress: {_crawlLimit}/{_crawlLimit} ({100:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]        ");
             }
         }
 
@@ -86,6 +88,7 @@ namespace Crawler
         {
             using (var response = await _client.GetAsync(link.Target))
             {
+                OnOnSiteVisited(link, response);
 
                 if (response.Headers.Location != null)
                 {
@@ -122,6 +125,23 @@ namespace Crawler
                 Debug.WriteLine($"Failed to normalize Uri for link '{link}'");
                 return null;
             }
+        }
+
+        public class SiteVisitedEventArgs
+        {
+            public Link Link { get; }
+            public HttpResponseMessage Response { get; }
+
+            public SiteVisitedEventArgs(Link link, HttpResponseMessage response)
+            {
+                Link = link;
+                Response = response;
+            }
+        }
+
+        protected virtual void OnOnSiteVisited(Link link, HttpResponseMessage response)
+        {
+            SiteVisited?.Invoke(this, new SiteVisitedEventArgs(link, response));
         }
     }
 

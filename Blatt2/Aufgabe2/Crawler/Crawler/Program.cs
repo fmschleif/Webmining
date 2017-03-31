@@ -14,9 +14,17 @@ namespace Crawler
 {
     class Program
     {
+        private static Dictionary<Link, string> ContentDict = new Dictionary<Link, string>();
+
         static void Main(string[] args)
         {
-            var crawler = new Crawler(args);
+            var crawler = new Crawler(args, 1000);
+
+            crawler.SiteVisited += async (sender, eventArgs) =>
+            {
+                ContentDict[eventArgs.Link] = await eventArgs.Response.Content.ReadAsStringAsync();
+            };
+
             crawler.StartCrawling();
         }
     }
