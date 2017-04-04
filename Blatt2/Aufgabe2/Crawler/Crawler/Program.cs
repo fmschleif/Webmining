@@ -14,18 +14,30 @@ namespace Crawler
 {
     class Program
     {
-        private static Dictionary<Link, string> ContentDict = new Dictionary<Link, string>();
+        private static ConcurrentDictionary<Link, string> ContentDict = new ConcurrentDictionary<Link, string>();
 
         static void Main(string[] args)
         {
+            File.Delete("FollowedLinks.txt");
+            File.Delete("NotFollowedLinks.txt");
+
             var crawler = new Crawler(args, 1000);
 
-            crawler.SiteVisited += async (sender, eventArgs) =>
+            crawler.SiteBeforeVisit += (sender, link) =>
             {
-                ContentDict[eventArgs.Link] = await eventArgs.Response.Content.ReadAsStringAsync();
+                File.AppendAllText("FollowedLinks.txt", $"{link}\n");
+                Console.Write($"\rProgress: {crawler.VisitedSites.Count}/{crawler.CrawlLimit} ({100.0 * crawler.VisitedSites.Count / crawler.CrawlLimit:F2}%) [OpenTasks: {crawler.CurrentlyProcessedLinks.Count}, LinkInQueue: {crawler.LinksToFollow.Count}]        ");
+            };
+
+            crawler.SiteAfterVisit += async (sender, eventArgs) =>
+            {
+                Console.Write($"\rProgress: {crawler.VisitedSites.Count}/{crawler.CrawlLimit} ({100.0 * crawler.VisitedSites.Count / crawler.CrawlLimit:F2}%) [OpenTasks: {crawler.CurrentlyProcessedLinks.Count}, LinkInQueue: {crawler.LinksToFollow.Count}]        ");
+                ContentDict.TryAdd(eventArgs.Link, await eventArgs.Response.Content.ReadAsStringAsync());
             };
 
             crawler.StartCrawling();
+
+            File.WriteAllText("NotFollowedLinks.txt", String.Join("\n", crawler.LinksToFollow));
         }
     }
 }

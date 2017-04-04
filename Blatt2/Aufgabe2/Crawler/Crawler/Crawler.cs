@@ -23,7 +23,13 @@ namespace Crawler
 
         private int _crawlLimit;
 
-        public event EventHandler<SiteVisitedEventArgs> SiteVisited;
+        public IReadOnlyCollection<Link> LinksToFollow => _linksToFollow;
+        public IReadOnlyCollection<Link> CurrentlyProcessedLinks => (IReadOnlyCollection<Link>) _workingTasks.Keys;
+        public IReadOnlyCollection<string> VisitedSites => _visited;
+        public int CrawlLimit => _crawlLimit;
+
+        public event EventHandler<Link> SiteBeforeVisit;
+        public event EventHandler<SiteVisitedEventArgs> SiteAfterVisit;
 
         public Crawler(IEnumerable<string> seedUrls, int crawlLimit = 5000)
         {
@@ -42,11 +48,8 @@ namespace Crawler
 
         public void StartCrawling()
         {
-            File.Delete("CrawlerResult.txt");
-
             while (_visited.Count < _crawlLimit)
             {
-                Console.Write($"\rProgress: {_visited.Count}/{_crawlLimit} ({100.0*_visited.Count/_crawlLimit:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]        ");
                 while (_linksToFollow.IsEmpty && _workingTasks.Count > 0)
                 {
                     Task.WhenAny(_workingTasks.Values).Wait();
@@ -58,23 +61,16 @@ namespace Crawler
                 if (!_linksToFollow.TryDequeue(out Link curLink) || _visited.Contains(curLink.Target))
                     continue;
 
-                //Console.WriteLine($"Visitng: {curLink.Target} (InQueue: {_linksToFollow.Count}, Visited: {_visited.Count})");
-
-                File.AppendAllText("CrawlerResult.txt", $"{curLink}\n");
-
                 _workingTasks.TryAdd(curLink, CrawlTargetSite(curLink).ContinueWith(task => _workingTasks.TryRemove(curLink, out Task _)));
             }
-            while (!_workingTasks.IsEmpty)
-            {
-                Task.WhenAll(_workingTasks.Values).Wait(200);
-                Console.Write($"\rProgress: {_crawlLimit}/{_crawlLimit} ({100:F2}%) [OpenTasks: {_workingTasks.Count}, LinkInQueue: {_linksToFollow.Count}]        ");
-            }
+            Task.WhenAll(_workingTasks.Values).Wait();
         }
 
         private async Task CrawlTargetSite(Link link)
         {
             try
             {
+                OnSiteBeforeVisit(link);
                 _visited.Add(link.Target);
                 _linksToFollow.EnqueueRange(await GetAllLinkFromSite(link));
             }
@@ -88,7 +84,7 @@ namespace Crawler
         {
             using (var response = await _client.GetAsync(link.Target))
             {
-                OnOnSiteVisited(link, response);
+                OnSiteAfterVisit(link, response);
 
                 if (response.Headers.Location != null)
                 {
@@ -139,9 +135,14 @@ namespace Crawler
             }
         }
 
-        protected virtual void OnOnSiteVisited(Link link, HttpResponseMessage response)
+        protected virtual void OnSiteBeforeVisit(Link link)
         {
-            SiteVisited?.Invoke(this, new SiteVisitedEventArgs(link, response));
+            SiteBeforeVisit?.Invoke(this, link);
+        }
+
+        protected virtual void OnSiteAfterVisit(Link link, HttpResponseMessage response)
+        {
+            SiteAfterVisit?.Invoke(this, new SiteVisitedEventArgs(link, response));
         }
     }
 
