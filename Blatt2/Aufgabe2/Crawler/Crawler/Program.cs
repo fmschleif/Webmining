@@ -16,12 +16,14 @@ namespace Crawler
     {
         private static ConcurrentDictionary<Link, string> ContentDict = new ConcurrentDictionary<Link, string>();
 
+
         static void Main(string[] args)
         {
             File.Delete("FollowedLinks.txt");
             File.Delete("NotFollowedLinks.txt");
+            File.Delete("DeinzerGraph.txt");
 
-            var crawler = new Crawler(args, 1000);
+            var crawler = new Crawler(args, 10);
 
             crawler.SiteBeforeVisit += (sender, link) =>
             {
@@ -38,6 +40,17 @@ namespace Crawler
             crawler.StartCrawling();
 
             File.WriteAllText("NotFollowedLinks.txt", String.Join("\n", crawler.LinksToFollow));
+
+            ExportAsDeinzerGraph(crawler, "DeinzerGraph.txt");
+        }
+
+        public static void ExportAsDeinzerGraph(Crawler crawler, string filePath)
+        {
+            File.WriteAllText(filePath, "# Websites in the Graph\n");
+            File.AppendAllText(filePath, string.Join("\n", crawler.VisitedSites.Select(s => $"knoten {s}")));
+
+            File.AppendAllText(filePath, "\n\n# Links between Websites\n");
+            File.AppendAllText(filePath, string.Join("\n", crawler.LinksFromVisitedSites.Where(link => link.Source != null).Select(link => $"kante {link.Source} {link.Target}")));
         }
     }
 }

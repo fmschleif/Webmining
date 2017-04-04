@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Crawler
     public class Crawler
     {
         private ConcurrentQueue<Link> _linksToFollow;
-        private HashSet<string> _visited;
+        private MultiValueDictionary<string, Link> _visited;
         private ConcurrentDictionary<Link, Task> _workingTasks;
         private HttpClient _client;
 
@@ -25,7 +26,9 @@ namespace Crawler
 
         public IReadOnlyCollection<Link> LinksToFollow => _linksToFollow;
         public IReadOnlyCollection<Link> CurrentlyProcessedLinks => (IReadOnlyCollection<Link>) _workingTasks.Keys;
-        public IReadOnlyCollection<string> VisitedSites => _visited;
+        public IReadOnlyCollection<string> VisitedSites => (IReadOnlyCollection<string>) _visited.Keys;
+        public IEnumerable<Link> LinksFromVisitedSites => _visited.Values.SelectMany(links => links);
+        public IReadOnlyCollection<Link> LinksFromSite(string url) => _visited[url];
         public int CrawlLimit => _crawlLimit;
 
         public event EventHandler<Link> SiteBeforeVisit;
@@ -34,7 +37,7 @@ namespace Crawler
         public Crawler(IEnumerable<string> seedUrls, int crawlLimit = 5000)
         {
             _linksToFollow = new ConcurrentQueue<Link>(seedUrls.Select(s => new Link { Target = s }));
-            _visited = new HashSet<string>();
+            _visited = new MultiValueDictionary<string, Link>();
             _workingTasks = new ConcurrentDictionary<Link, Task>();
 
             _client = new HttpClient(new HttpClientHandler
@@ -58,10 +61,13 @@ namespace Crawler
                 if (_linksToFollow.IsEmpty && _workingTasks.Count == 0)
                     break;
 
-                if (!_linksToFollow.TryDequeue(out Link curLink) || _visited.Contains(curLink.Target))
-                    continue;
-
-                _workingTasks.TryAdd(curLink, CrawlTargetSite(curLink).ContinueWith(task => _workingTasks.TryRemove(curLink, out Task _)));
+                if (_linksToFollow.TryDequeue(out Link curLink))
+                {
+                    if (!_visited.ContainsKey(curLink.Target))
+                        _workingTasks.TryAdd(curLink, CrawlTargetSite(curLink).ContinueWith(task => _workingTasks.TryRemove(curLink, out Task _)));
+                    else
+                        _visited.Add(curLink.Target, curLink);
+                }
             }
             Task.WhenAll(_workingTasks.Values).Wait();
         }
@@ -71,7 +77,7 @@ namespace Crawler
             try
             {
                 OnSiteBeforeVisit(link);
-                _visited.Add(link.Target);
+                _visited.Add(link.Target, link);
                 _linksToFollow.EnqueueRange(await GetAllLinkFromSite(link));
             }
             catch (Exception e)
