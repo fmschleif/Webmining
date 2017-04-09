@@ -17,7 +17,7 @@ namespace Crawler
 {
     public class Crawler
     {
-        private ConcurrentQueue<Link> _linksToFollow;
+        private IConcurentLinkStorage _linksToFollow;
         private MultiValueDictionary<string, Link> _visited;
         private ConcurrentDictionary<Link, Task> _workingTasks;
         private HttpClient _client;
@@ -34,9 +34,15 @@ namespace Crawler
         public event EventHandler<Link> SiteBeforeVisit;
         public event EventHandler<SiteVisitedEventArgs> SiteAfterVisit;
 
-        public Crawler(IEnumerable<string> seedUrls, int crawlLimit = 5000)
+        public Crawler(IEnumerable<string> seedUrls, int crawlLimit = 5000, SearchType searchType = SearchType.BreadthFirstSearch)
         {
-            _linksToFollow = new ConcurrentQueue<Link>(seedUrls.Select(s => new Link { Target = s }));
+            if (searchType == SearchType.BreadthFirstSearch)
+                _linksToFollow = new ConcurrentLinkQueue();
+            else if (searchType == SearchType.DepthFirstSearch)
+                _linksToFollow = new ConcurrentLinkStack();
+
+            _linksToFollow.AddRange(seedUrls.Select(seedUrl => new Link {Target = seedUrl}));
+
             _visited = new MultiValueDictionary<string, Link>();
             _workingTasks = new ConcurrentDictionary<Link, Task>();
 
@@ -61,7 +67,7 @@ namespace Crawler
                 if (_linksToFollow.IsEmpty && _workingTasks.Count == 0)
                     break;
 
-                if (_linksToFollow.TryDequeue(out Link curLink))
+                if (_linksToFollow.TryGet(out Link curLink))
                 {
                     if (!_visited.ContainsKey(curLink.Target))
                         _workingTasks.TryAdd(curLink, CrawlTargetSite(curLink).ContinueWith(task => _workingTasks.TryRemove(curLink, out Task _)));
@@ -78,7 +84,7 @@ namespace Crawler
             {
                 OnSiteBeforeVisit(link);
                 _visited.Add(link.Target, link);
-                _linksToFollow.EnqueueRange(await GetAllLinkFromSite(link));
+                _linksToFollow.AddRange(await GetAllLinkFromSite(link));
             }
             catch (Exception e)
             {
@@ -149,6 +155,35 @@ namespace Crawler
         protected virtual void OnSiteAfterVisit(Link link, HttpResponseMessage response)
         {
             SiteAfterVisit?.Invoke(this, new SiteVisitedEventArgs(link, response));
+        }
+
+        public enum SearchType
+        {
+            BreadthFirstSearch, DepthFirstSearch
+        }
+
+        private interface IConcurentLinkStorage : IReadOnlyCollection<Link>
+        {
+            bool IsEmpty { get; }
+            void Add(Link link);
+            void AddRange(IEnumerable<Link> links);
+            bool TryGet(out Link link);
+        }
+
+        private class ConcurrentLinkQueue : ConcurrentQueue<Link>, IConcurentLinkStorage
+        {
+            public new bool IsEmpty => base.IsEmpty;
+            public void Add(Link link) => Enqueue(link);
+            public void AddRange(IEnumerable<Link> links) => links.ForEach(Enqueue);
+            public bool TryGet(out Link link) => TryDequeue(out link);
+        }
+
+        private class ConcurrentLinkStack : ConcurrentStack<Link>, IConcurentLinkStorage
+        {
+            public new bool IsEmpty => base.IsEmpty;
+            public void Add(Link link) => Push(link);
+            public void AddRange(IEnumerable<Link> links) => links.ForEach(Push);
+            public bool TryGet(out Link link) => TryPop(out link);
         }
     }
 
