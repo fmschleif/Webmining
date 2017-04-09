@@ -19,15 +19,15 @@ namespace Crawler
 
         static void Main(string[] args)
         {
-            File.Delete("FollowedLinks.txt");
-            File.Delete("NotFollowedLinks.txt");
-            File.Delete("DeinzerGraph.txt");
+            if (Directory.Exists("result"))
+                Directory.Delete("result", true);
+            Directory.CreateDirectory("result");
 
-            var crawler = new Crawler(args, 10);
+            var crawler = new Crawler(args, 1000);
 
             crawler.SiteBeforeVisit += (sender, link) =>
             {
-                File.AppendAllText("FollowedLinks.txt", $"{link}\n");
+                File.AppendAllText("result/FollowedLinks.txt", $"{link}\n");
                 Console.Write($"\rProgress: {crawler.VisitedSites.Count}/{crawler.CrawlLimit} ({100.0 * crawler.VisitedSites.Count / crawler.CrawlLimit:F2}%) [OpenTasks: {crawler.CurrentlyProcessedLinks.Count}, LinkInQueue: {crawler.LinksToFollow.Count}]        ");
             };
 
@@ -39,9 +39,9 @@ namespace Crawler
 
             crawler.StartCrawling();
 
-            File.WriteAllText("NotFollowedLinks.txt", String.Join("\n", crawler.LinksToFollow));
+            File.WriteAllText("result/NotFollowedLinks.txt", String.Join("\n", crawler.LinksToFollow));
 
-            ExportAsDeinzerGraph(crawler, "DeinzerGraph.txt");
+            ExportAsDeinzerGraph(crawler, "result/DeinzerGraph.txt");
         }
 
         public static void ExportAsDeinzerGraph(Crawler crawler, string filePath)
