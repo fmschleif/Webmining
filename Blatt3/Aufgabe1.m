@@ -49,3 +49,7 @@ scatter(irisDataNormStdDiv(3,:), irisDataNormStdDiv(4,:), 50, irisTargets');
 xlabel('Dimension 3');
 ylabel('Dimension 4');
 title('Normalized StdDiv');
+
+%% c)
+irisDataNonNegative = irisInputs - repmat(min(irisInputs, 2), 1, size(irisInputs,2));
+irisDataBetweenZeroAndOne = irisDataNonNegative ./ repmat(max(irisInputs, 2), 1, size(irisInputs,2));
