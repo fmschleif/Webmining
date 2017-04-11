@@ -51,5 +51,25 @@ ylabel('Dimension 4');
 title('Normalized StdDiv');
 
 %% c)
-irisDataNonNegative = irisInputs - repmat(min(irisInputs, 2), 1, size(irisInputs,2));
-irisDataBetweenZeroAndOne = irisDataNonNegative ./ repmat(max(irisInputs, 2), 1, size(irisInputs,2));
+irisDataNonNegative = irisInputs - repmat(min(irisInputs, [], 2), 1, size(irisInputs,2));
+irisDataBetweenZeroAndOne = irisDataNonNegative ./ repmat(max(irisDataNonNegative, [], 2), 1, size(irisInputs,2));
+
+figure('Name', 'Between Zero And One');
+plotIdx = 0;
+combs2d = combnk(1:size(irisDataBetweenZeroAndOne,1),2);
+for i = 1:size(combs2d,1)
+    plotIdx  = plotIdx + 1;
+    subplot(2,3,plotIdx);
+    scatter(irisDataBetweenZeroAndOne(combs2d(i,1),:), irisDataBetweenZeroAndOne(combs2d(i,2),:), 50, irisTargets');
+    xlabel(sprintf('Dimension %d', combs2d(i,1)));
+    ylabel(sprintf('Dimension %d', combs2d(i,2)));
+    title(sprintf('Dimensions %d & %d', combs2d(i,1), combs2d(i,2)));
+end
+
+%% d)
+irisDataCovariance = irisInputs * irisInputs' / size(irisInputs, 2)
+
+%% e)
+irisDataMean = mean(irisInputs, 2)
+irisDataMedian = median(irisInputs, 2)
+irisDataMeanMedianDiff = abs(irisDataMean - irisDataMedian)
