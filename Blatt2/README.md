@@ -1,4 +1,4 @@
-# Blatt 2
+# Blatt 2: Übungen Webcrawler/Indexing
 
 ## [Aufgabe 1: (Newsgroup Daten)](Aufgabe1.txt)
 
