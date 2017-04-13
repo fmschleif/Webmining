@@ -67,7 +67,7 @@ for i = 1:size(combs2d,1)
 end
 
 %% d)
-irisDataCovariance = irisInputs * irisInputs' / size(irisInputs, 2)
+irisDataCovariance = irisDataNormMean * irisDataNormMean' / size(irisInputs, 2)
 
 %% e)
 irisDataMean = mean(irisInputs, 2)
