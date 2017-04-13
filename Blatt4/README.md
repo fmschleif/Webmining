@@ -1,6 +1,6 @@
-﻿# Blatt 4: Data Encoding II + Eigenvalues
+# Blatt 4: Data Encoding II + Eigenvalues
 
-## Aufgabe 1: Eigenwert-Analyse
+## [Aufgabe 1: Eigenwert-Analyse](Aufgabe1.m)
 
 Laden Sie die Daten `iris_test.mat` aus dem elearning-System in Matlab.
 - Normalisieren Sie die Daten bzgl Mittelwert
@@ -11,9 +11,9 @@ Laden Sie die Daten `iris_test.mat` aus dem elearning-System in Matlab.
 - Berechnen Sie die Eigenwerte / Eigenvektoren der Matrix C mit MatlabKommandos - Vergleichen Sie 
 - Plotten Sie ein Eigenspektrum zu C
 
-## Aufgabe 2: Bag of Words
+## [Aufgabe 2: Bag of Words](Aufgabe2.m)
 
-Laden Sie die Datei bow newsletter.data herunter
+Laden Sie die Datei bow `newsletter.data` herunter
 - Verwenden Sie die Funktionen in `Convert2FullMatrix.m` um aus den Daten eine quadratische Matrix zu erzeugen
 - Die Daten sind hier fur 2000 newsletter posts mit 20 Gruppen gegeben
 - Visualisieren Sie die Matrix
