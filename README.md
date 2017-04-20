@@ -15,4 +15,4 @@
 ## [Blatt 4: Data Encoding II + Eigenvalues](Blatt4)
 - ### [Aufgabe 1: Eigenwert-Analyse](Blatt4/Aufgabe1.m)
 - ### [Aufgabe 2: Bag of Words](Blatt4/Aufgabe2.m)
-- ### Aufgabe 3: Nystroem
+- ### [Aufgabe 3: Nystroem](Blatt4/Aufgabe3.m)

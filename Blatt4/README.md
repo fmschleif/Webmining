@@ -19,6 +19,6 @@ Laden Sie die Datei bow `newsletter.data` herunter
 - Visualisieren Sie die Matrix
 - → Diskussion
 
-## Aufgabe 3: Nystroem
+## [Aufgabe 3: Nystroem](Aufgabe3.m)
 
 Versuchen Sie die BoW Matrix aus Aufgabe 2 per Nystroem zu approximieren. Nutzen Sie dazu unterschiedlich viele Landmarks. Bewerten Sie die Rekonstruktionsguete mit der Frobenius norm.
