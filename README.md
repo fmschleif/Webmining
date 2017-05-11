@@ -18,8 +18,8 @@
 - ### [Aufgabe 3: Nystroem](Blatt4/Aufgabe3.m)
 
 ## [Blatt 5: LSA / PCA](Blatt5)
-- ### Aufgabe 1: Principal Component-Analyse
-- ### Aufgabe2: Latent Semantic Analysis
+- ### [Aufgabe 1: Principal Component-Analyse](Blatt5/Aufgabe1.m)
+- ### Aufgabe 2: Latent Semantic Analysis
 
 ## [Blatt 6: Clustering](Blatt6)
 - ### Aufgabe 1: Clustering

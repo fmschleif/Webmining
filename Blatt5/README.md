@@ -1,6 +1,6 @@
 # Blatt 5: LSA / PCA
 
-## Aufgabe 1: Principal Component-Analyse
+## [Aufgabe 1: Principal Component-Analyse](Aufgabe1.m)
 
 Laden Sie die Daten `Sample.mat` aus dem elearning-System in Matlab.
 
