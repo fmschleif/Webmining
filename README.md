@@ -19,4 +19,9 @@
 
 ## [Blatt 5: LSA / PCA](Blatt5)
 - ### Aufgabe 1: Principal Component-Analyse
-- ### Aufgabe 2: Bag of Words
+- ### Aufgabe2: Latent Semantic Analysis
+
+## [Blatt 6: Clustering](Blatt6)
+- ### Aufgabe 1: Clustering
+- ### Aufgabe 2: Graph-Clustering
+- ### Aufgabe 3: (Berliner S/U-Bahn - Netz)
